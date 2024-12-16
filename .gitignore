@@ -1,0 +1,6 @@
+.cache/
+.vscode/
+build/
+# Personal scripts I use for my own editor and debugger
+debug.ps1
+edit.ps1
