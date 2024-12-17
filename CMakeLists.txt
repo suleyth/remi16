@@ -69,8 +69,18 @@ add_executable(
     remi_debugger
     
     ./remi_debugger/main.cpp
+
+    # vendored ImGui dependencies
+    ./vendor/imgui/imgui.cpp
+    ./vendor/imgui/imgui_demo.cpp
+    ./vendor/imgui/imgui_draw.cpp
+    ./vendor/imgui/imgui_tables.cpp
+    ./vendor/imgui/imgui_widgets.cpp
+
+    ./vendor/imgui/backends/imgui_impl_sdl3.cpp
+    ./vendor/imgui/backends/imgui_impl_sdlrenderer3.cpp
 )
-target_include_directories(remi_debugger PRIVATE "./")
+target_include_directories(remi_debugger PRIVATE "./" "./vendor/imgui")
 
 # VM (cpu)
 add_library(
