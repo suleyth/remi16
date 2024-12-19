@@ -14,13 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <cstdio>
 #include <remi_vm/vm.hpp>
 #include <SDL3/SDL.h>
-
 #include <imgui.h>
 #include "../vendor/imgui/backends/imgui_impl_sdl3.h"
 #include "../vendor/imgui/backends/imgui_impl_sdlrenderer3.h"
+
+#include "./debugger.hpp"
 
 int main() {
     SDL_Init(SDL_INIT_VIDEO);
@@ -36,6 +36,18 @@ int main() {
     ImGui::CreateContext();
     ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer3_Init(renderer);
+
+    // Initialize VM
+    auto console = debugger {};
+    // Run test program
+    u32 program[] = {
+        (u32) vm::instr(vm::opcode::nop),
+        (u32) vm::instr(vm::opcode::mov_lit_reg, vm::word(2), u8(vm::reg::r1)),
+        (u32) vm::instr(vm::opcode::mov_lit_reg, vm::word(2), u8(vm::reg::r2)),
+        (u32) vm::instr(vm::opcode::add_reg_reg, u8(vm::reg::r1), u8(vm::reg::r2)),
+        (u32) vm::instr(vm::opcode::hlt),
+    };
+    console.execute(program);
 
     // Show window only after everything is loaded
     SDL_ShowWindow(window);
@@ -61,7 +73,6 @@ int main() {
         ImGui_ImplSDLRenderer3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
-
 
         // ---------------------------------------- Update
         ImGui::ShowDemoWindow(nullptr);
