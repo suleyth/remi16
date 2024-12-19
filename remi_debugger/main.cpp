@@ -34,6 +34,9 @@ int main() {
     // Initialize ImGui
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    auto& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigDockingWithShift = true;
     ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer3_Init(renderer);
 
@@ -75,6 +78,7 @@ int main() {
         ImGui::NewFrame();
 
         // ---------------------------------------- Update
+        ImGui::DockSpaceOverViewport();
         ImGui::ShowDemoWindow(nullptr);
 
         // ---------------------------------------- Draw
