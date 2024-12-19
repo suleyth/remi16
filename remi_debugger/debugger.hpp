@@ -24,4 +24,5 @@ class debugger {
     vm::sakuya16c cpu = {};
 public:
     void execute(std::span<u32> program);
+    void draw_imgui();
 };

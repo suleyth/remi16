@@ -79,7 +79,8 @@ int main() {
 
         // ---------------------------------------- Update
         ImGui::DockSpaceOverViewport();
-        ImGui::ShowDemoWindow(nullptr);
+        console.draw_imgui();
+        ImGui::ShowDemoWindow();
 
         // ---------------------------------------- Draw
         // Clear to black
