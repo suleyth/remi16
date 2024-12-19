@@ -20,6 +20,11 @@
 #include "./debugger.hpp"
 #include "../remi_vm/vm.hpp"
 
+// Executes a sakuya16c assembly program. The execution will not stop until a HLT instruction is encountered.
+//
+// (for now it sets the PC register to 0 before executing the program)
+//
+// Crashes if the last instruction in `program` is not HLT or if `program` is empty.
 void debugger::execute(std::span<u32> program) {
     cpu.set(vm::reg::pc, 0);
 
@@ -30,10 +35,11 @@ void debugger::execute(std::span<u32> program) {
     while (next_instr.op != vm::opcode::hlt) {
         // Fetch instruction
         u16 pc = cpu.reg(vm::reg::pc);
+        // `program` is an u32 array, but `pc` is supposed to be a byte index. Hence the need for division
         next_instr = vm::instr(program[pc / 4]);
         // Execute
-        cpu.execute(next_instr);
-        // Program counter always increments by 4
+        vm::execute(cpu, next_instr);
+        // Program counter always increments by 4 after executing
         cpu.set(vm::reg::pc, pc + 4);
     }
 }

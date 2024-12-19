@@ -58,7 +58,7 @@ namespace op {
     }
 }
 
-// Instruction lookup table by opcode
+// Instruction lookup table by opcode (this is to avoid a giant switch statement)
 typedef control_flow (*opcode_func)(sakuya16c& cpu, instr instr);
 static opcode_func opcode_table[] = {
     op::nop,
@@ -71,9 +71,10 @@ static opcode_func opcode_table[] = {
 // TODO: add a test to verify the instruction lookup table and that it
 // always matches the opcode enum.
 
-control_flow sakuya16c::execute(instr instr) { 
+// Executes an instruction fetched from the lookup table.
+control_flow execute(sakuya16c& cpu, instr instr) { 
     opcode_func func = opcode_table[usize(instr.op)];
-    return func(*this, instr); 
+    return func(cpu, instr); 
 }
 
 } // namespace vm

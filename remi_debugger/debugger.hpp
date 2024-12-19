@@ -19,6 +19,7 @@
 #include "./main.hpp"
 #include "../remi_vm/vm.hpp"
 
+// sakuya16c assembly debugger
 class debugger {
     vm::sakuya16c cpu = {};
 public:

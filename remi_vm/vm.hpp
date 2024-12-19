@@ -46,6 +46,9 @@ union word {
     word(u16 val): val(val) {}
 };
 
+// The sakuya16c CPU has 16 registers, all 16-bit wide.
+//
+// The first 8 registers are for specific values, and the rest are general purpose.
 enum class reg: u8 {
     // program counter
     pc,
@@ -67,6 +70,7 @@ enum class reg: u8 {
     r0, r1, r2, r3, r4, r5, r6, r7,
 };
 
+// Operation code for sakuya16c assembly instructions.
 enum class opcode: u8 {
     nop = 0,
     hlt,
@@ -75,7 +79,9 @@ enum class opcode: u8 {
     add_reg_reg,
 };
 
-// An instruction is ALWAYS 4 bytes wide. First byte is the opcode.
+// An instruction is ALWAYS 4 bytes wide, no matter the argument number. 
+//
+// The first byte is the opcode. 
 struct instr {
     opcode op;
     u8 args[3];
@@ -112,21 +118,32 @@ struct status {
     // todo
 };
 
+// Value returned from an instruction to indicate the state of the CPU
 enum class control_flow {
+    // Continue
     ok,
+    // Halt the CPU for now
     halt,
+    // Fatal error, shutdown or reset
     error,
 };
 
-class sakuya16c {
-private:
+// The sakuya16c is a 16-bit fantasy CPU made for the remi16 fantasy console.
+//
+// It executes 4-byte instructions (dwordcode?)
+struct sakuya16c {
+    // Registers are stored contiguously in an array and indexed by helper methods.
     u16 registers[16] = {};
+    // Status flags
     status status = {};
-public:
-    void set(reg reg, u16 val) { registers[u8(reg)] = val; }
-    u16 reg(reg reg) { return registers[u8(reg)]; }
 
-    control_flow execute(instr instr);
+    // Sets the value of a register.
+    inline void set(reg reg, u16 val) { registers[u8(reg)] = val; }
+    // Gets the value of a register.
+    inline u16 reg(reg reg) { return registers[u8(reg)]; }
 };
+
+// Executes a single instruction.
+control_flow execute(sakuya16c& cpu, instr instr);
 
 } // namespace vm
