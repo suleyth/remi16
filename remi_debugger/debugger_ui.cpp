@@ -81,7 +81,7 @@ void cpu_imgui(vm::sakuya16c &cpu) {
     // Table for the first 8 specific registers
     ImGui::BeginTable("Registers", 2, table_flags);
         ImGui::TableSetupColumn("Reg", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize);
-        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed, 45.0f);
         ImGui::TableHeadersRow();
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
@@ -100,7 +100,7 @@ void cpu_imgui(vm::sakuya16c &cpu) {
     // Table for the last 8 general purpose registers
     ImGui::BeginTable("GeneralRegisters", 2, table_flags);
         ImGui::TableSetupColumn("Reg", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize);
-        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed, 45.0f);
         ImGui::TableHeadersRow();
         ImGui::TableNextRow();
         ImGui::TableNextColumn();

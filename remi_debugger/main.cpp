@@ -45,8 +45,9 @@ int main() {
     // Run test program
     u32 program[] = {
         (u32) vm::instr(vm::opcode::nop),
-        (u32) vm::instr(vm::opcode::mov_lit_reg, vm::word(2), u8(vm::reg::r1)),
-        (u32) vm::instr(vm::opcode::mov_lit_reg, vm::word(2), u8(vm::reg::r2)),
+        (u32) vm::instr(vm::opcode::mov_lit_reg, vm::word(u16(2)), u8(vm::reg::r1)),
+        (u32) vm::instr(vm::opcode::mov_lit_reg, vm::word(u16(2)), u8(vm::reg::r2)),
+        (u32) vm::instr(vm::opcode::mov_lit_reg, vm::word(i16(-32734)), u8(vm::reg::r3)),
         (u32) vm::instr(vm::opcode::add_reg_reg, u8(vm::reg::r1), u8(vm::reg::r2)),
         (u32) vm::instr(vm::opcode::hlt),
     };

@@ -16,6 +16,7 @@
 
 #pragma once
 #include <cstdint>
+#include <cstring>
 #include <type_traits>
 
 namespace vm {
@@ -44,6 +45,10 @@ union word {
 
     // Implicit constructor from u16
     word(u16 val): val(val) {}
+    // Implicit constructor from i16
+    word(i16 val) {
+        memcpy(&this->val, &val, sizeof(val));
+    }
 };
 
 // The sakuya16c CPU has 16 registers, all 16-bit wide.
