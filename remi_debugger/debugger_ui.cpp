@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
-#include <string>
-
 #include "./main.hpp"
 #include "../remi_vm/vm.hpp"
 #include "./debugger.hpp"
@@ -39,32 +37,15 @@ void reg_imgui(vm::sakuya16c &cpu, const char* name, vm::reg reg, regview& view)
     ImGui::Text("%s", name);
     if (ImGui::IsItemHovered()) {
         ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImGui::GetColorU32(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled)));
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+            // Switch view
+            switch (view) {
+            case regview::unsigned_: view = regview::signed_; break;
+            case regview::signed_: view = regview::hex; break;
+            case regview::hex: view = regview::unsigned_; break;
+            }
+        }
     }
-
-    // On right click, popup that lets you format the register value in different ways
-    std::string popup_name = std::string(name) + "_popup";
-    if (ImGui::BeginPopupContextItem(popup_name.c_str())) {
-        // Make button more tight
-        ImGui::PushStyleVarY(ImGuiStyleVar_FramePadding, 1);
-        ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, 2);
-    
-        if (ImGui::Button("Unsigned")) { 
-            view = regview::unsigned_; 
-            ImGui::CloseCurrentPopup();
-        }
-        if (ImGui::Button("Signed")) { 
-            view = regview::signed_; 
-            ImGui::CloseCurrentPopup();
-        }
-        if (ImGui::Button("Hex"))  { 
-            view = regview::hex; 
-            ImGui::CloseCurrentPopup();
-        }
-
-        ImGui::PopStyleVar(2);
-        ImGui::EndPopup();
-    }
-
     // Register value
     ImGui::TableNextColumn();
     switch (view) {
