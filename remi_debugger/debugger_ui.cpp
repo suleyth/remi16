@@ -32,20 +32,20 @@ static struct {
 
 // Renders ImGui table row for a register
 void reg_imgui(vm::sakuya16c &cpu, const char* name, vm::reg reg, regview& view) {
-    // Register cell is blue and white on hover
-    ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImGui::GetColorU32(ImGui::GetStyleColorVec4(ImGuiCol_FrameBg)));
-    ImGui::Text("%s", name);
-    if (ImGui::IsItemHovered()) {
-        ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImGui::GetColorU32(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled)));
-        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-            // Switch view
+    // Emphasize button
+    ImGui::PushStyleVarX(ImGuiStyleVar_FramePadding, 15);
+    ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, 0);
+    ImGui::PushStyleVarX(ImGuiStyleVar_ItemSpacing, 0);
+    if (ImGui::Button(name)) {
+        // Switch view
             switch (view) {
             case regview::unsigned_: view = regview::signed_; break;
             case regview::signed_: view = regview::hex; break;
             case regview::hex: view = regview::unsigned_; break;
             }
-        }
     }
+    ImGui::PopStyleVar(3);
+
     // Register value
     ImGui::TableNextColumn();
     switch (view) {
