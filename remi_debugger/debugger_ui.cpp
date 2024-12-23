@@ -69,8 +69,6 @@ void reg_imgui(vm::sakuya16c &cpu, const char* name, vm::reg reg, regview& view)
 
 // Renders ImGui related to the sakuya16c CPU.
 void cpu_imgui(vm::sakuya16c &cpu) {
-    cpu.set(vm::reg::fl, 65535);
-
     ImGui::Begin("sakuya16c");
 
     ImGuiTableFlags table_flags = ImGuiTableFlags_Borders 
@@ -117,7 +115,131 @@ void cpu_imgui(vm::sakuya16c &cpu) {
     ImGui::End();
 }
 
+// Dissassembly syntax highlighting constants
+constexpr ImVec4 COLOR_OPCODE = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+constexpr ImVec4 COLOR_REGISTER = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+constexpr ImVec4 COLOR_LITERAL = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+
+// Returns a string representation of an opcode
+const char* opcode_name(vm::opcode opcode, bool overloaded_name = false);
+
+// UI state for the cpu viewer
+static struct {
+    bool show_overload = false;
+} disasm_ui;
+
+const char* reg_name(vm::reg reg);
+
+void draw_instr_arguments(vm::instr instr) {
+    auto draw_lit_reg = [](vm::instr instr) {
+        u16 lit = vm::word(instr.args[0], instr.args[1]).val;
+        vm::reg reg = static_cast<vm::reg>(instr.args[2]);
+
+        ImGui::TextColored(COLOR_LITERAL, "$%04x", lit);
+        ImGui::SameLine(0, 0);
+        ImGui::Text(", ");
+        ImGui::SameLine(0, 0);
+        ImGui::TextColored(COLOR_REGISTER, "%s", reg_name(reg));
+    };
+
+    auto draw_reg_reg = [](vm::instr instr) {
+        vm::reg reg1 = static_cast<vm::reg>(instr.args[0]);
+        vm::reg reg2 = static_cast<vm::reg>(instr.args[1]);
+
+        ImGui::TextColored(COLOR_REGISTER, "%s", reg_name(reg1));
+        ImGui::SameLine(0, 0);
+        ImGui::Text(", ");
+        ImGui::SameLine(0, 0);
+        ImGui::TextColored(COLOR_REGISTER, "%s", reg_name(reg2));
+    };
+
+    switch (instr.op) {
+    case vm::opcode::mov_lit_reg:
+        draw_lit_reg(instr);
+        break;
+    case vm::opcode::add_reg_reg:
+        draw_reg_reg(instr);
+        break;
+    default:
+        break;
+    }
+}
+
+// Draws dissassembly of the current running program
+void debugger::draw_current_program_imgui() {
+    ImGui::Begin("Current Program");
+    ImGui::Text("Size: $%zx | Instructions: %zu", program.size_bytes(), program.size());
+    ImGui::SameLine();
+    ImGui::Checkbox("Show Overload", &disasm_ui.show_overload);
+    ImGui::Separator();
+
+    ImGuiTableFlags table_flags = ImGuiTableFlags_Borders 
+        | ImGuiTableFlags_RowBg 
+        | ImGuiTableFlags_SizingFixedFit
+        | ImGuiTableFlags_ScrollY;
+
+    ImGui::BeginTable("Program", 2, table_flags);
+        ImGui::TableSetupColumn("Addr", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize);
+        ImGui::TableSetupColumn("Instruction", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableHeadersRow();
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+    
+    usize addr_counter = program_addr;
+    for (u32 u32_instr : program) {
+        auto instr = vm::instr(u32_instr);
+        ImGui::Text("$%04zx", addr_counter);
+        addr_counter += 4;
+        ImGui::TableNextColumn();
+        ImGui::TextColored(COLOR_OPCODE, "%s", opcode_name(instr.op, disasm_ui.show_overload));
+        ImGui::SameLine();
+        draw_instr_arguments(instr);
+        ImGui::TableNextColumn();
+    }
+    ImGui::EndTable();
+
+
+    ImGui::End();
+}
+
 // Renders all debugger ImGui
 void debugger::draw_imgui() {
     cpu_imgui(cpu);
+    draw_current_program_imgui();
+}
+
+
+// Opcode enum to string
+const char* opcode_name(vm::opcode opcode, bool overloaded_name) {
+    switch (opcode) {
+    case vm::opcode::nop: return "nop";
+    case vm::opcode::hlt: return "hlt";
+    case vm::opcode::mov_lit_reg: return overloaded_name ? "mov_lit_reg" : "mov";
+    case vm::opcode::add_reg_reg: return overloaded_name ? "add_reg_reg" : "add";
+    }
+    return "???";
+}
+
+// Reg enum to string
+const char* reg_name(vm::reg reg) {
+    switch (reg) {
+    case vm::reg::r0: return "#r0";
+    case vm::reg::r1: return "#r1";
+    case vm::reg::r2: return "#r2";
+    case vm::reg::r3: return "#r3";
+    case vm::reg::r4: return "#r4";
+    case vm::reg::r5: return "#r5";
+    case vm::reg::r6: return "#r6";
+    case vm::reg::r7: return "#r7";
+
+    case vm::reg::pc: return "#pc";
+    case vm::reg::ac: return "#ac";
+    case vm::reg::sp: return "#sp";
+    case vm::reg::fp: return "#fp";
+    case vm::reg::im: return "#im";
+    case vm::reg::mb: return "#mb";
+    case vm::reg::ps: return "#ps";
+    case vm::reg::fl: return "#fl";
+    }
+    return "#??";
 }

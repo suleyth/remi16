@@ -20,12 +20,17 @@
 #include "./debugger.hpp"
 #include "../remi_vm/vm.hpp"
 
+void debugger::load_program(usize addr, std::span<u32> program) {
+    this->program_addr = addr;
+    this->program = program;
+}
+
 // Executes a sakuya16c assembly program. The execution will not stop until a HLT instruction is encountered.
 //
 // (for now it sets the PC register to 0 before executing the program)
 //
 // Crashes if the last instruction in `program` is not HLT or if `program` is empty.
-void debugger::execute(std::span<u32> program) {
+void debugger::execute() {
     cpu.set(vm::reg::pc, 0);
 
     assert(!program.empty());

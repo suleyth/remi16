@@ -51,7 +51,7 @@ int main() {
         (u32) vm::instr(vm::opcode::add_reg_reg, u8(vm::reg::r1), u8(vm::reg::r2)),
         (u32) vm::instr(vm::opcode::hlt),
     };
-    console.execute(program);
+    console.load_program(0x00, program);
 
     // Show window only after everything is loaded
     SDL_ShowWindow(window);

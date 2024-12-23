@@ -49,6 +49,8 @@ union word {
     word(i16 val) {
         memcpy(&this->val, &val, sizeof(val));
     }
+    // Constructor from two u8
+    word(u8 lo, u8 hi): lo(lo), hi(hi) {}
 };
 
 // The sakuya16c CPU has 16 registers, all 16-bit wide.

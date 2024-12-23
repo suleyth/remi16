@@ -22,7 +22,14 @@
 // sakuya16c assembly debugger
 class debugger {
     vm::sakuya16c cpu = {};
+    std::span<u32> program = {};
+    // Used for dissassembly
+    usize program_addr = 0;
 public:
-    void execute(std::span<u32> program);
+    void load_program(usize addr, std::span<u32> program);
+    void execute();
+
+    // ImGui methods
     void draw_imgui();
+    void draw_current_program_imgui();
 };
