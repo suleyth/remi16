@@ -115,10 +115,10 @@ void cpu_imgui(vm::sakuya16c &cpu) {
     ImGui::End();
 }
 
-// Dissassembly syntax highlighting constants
-constexpr ImVec4 COLOR_OPCODE = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
-constexpr ImVec4 COLOR_REGISTER = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
-constexpr ImVec4 COLOR_LITERAL = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+// Dissassembly syntax highlighting constants (from ayu-mirage)
+constexpr ImVec4 COLOR_OPCODE = ImVec4(1.0f, 0.67f, 0.4f, 1.0f); // #FFAD66
+constexpr ImVec4 COLOR_REGISTER = ImVec4(0.94f, 0.52f, 0.47f, 1.0f); // #F28779
+constexpr ImVec4 COLOR_LITERAL = ImVec4(0.87f, 0.74f, 1.0f, 1.0f); // #DFBFFF
 constexpr ImVec4 COLOR_HIGHLIGHT = ImVec4(0.2f, 0.2f, 0.8f, 0.5f);
 
 // Returns a string representation of an opcode
