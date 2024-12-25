@@ -119,6 +119,7 @@ void cpu_imgui(vm::sakuya16c &cpu) {
 constexpr ImVec4 COLOR_OPCODE = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
 constexpr ImVec4 COLOR_REGISTER = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
 constexpr ImVec4 COLOR_LITERAL = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+constexpr ImVec4 COLOR_HIGHLIGHT = ImVec4(0.2f, 0.2f, 0.8f, 0.5f);
 
 // Returns a string representation of an opcode
 const char* opcode_name(vm::opcode opcode, bool overloaded_name = false);
@@ -168,9 +169,9 @@ void draw_instr_arguments(vm::instr instr) {
 // Draws dissassembly of the current running program
 void debugger::draw_current_program_imgui() {
     ImGui::Begin("Current Program");
-    ImGui::Text("Size: $%zx | Instructions: %zu", program.size_bytes(), program.size());
-    ImGui::SameLine();
     ImGui::Checkbox("Show Overload", &disasm_ui.show_overload);
+    ImGui::SameLine();
+    ImGui::Text("| Size: $%zx | Instructions: %zu", program.size_bytes(), program.size());
     ImGui::Separator();
 
     ImGuiTableFlags table_flags = ImGuiTableFlags_Borders 
@@ -178,22 +179,56 @@ void debugger::draw_current_program_imgui() {
         | ImGuiTableFlags_SizingFixedFit
         | ImGuiTableFlags_ScrollY;
 
+    auto current_running_instr = vm::instr(program[cpu.reg(vm::reg::pc) / 4]);
+    if (current_running_instr.op == vm::opcode::hlt) {
+        ImGui::BeginDisabled();
+    }
+
+    if (ImGui::Button("Step")) step();
+    ImGui::SameLine();
+    if (ImGui::Button("Execute")) execute();
+
+    if (current_running_instr.op == vm::opcode::hlt) {
+        ImGui::EndDisabled();
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("Reset")) {
+        cpu.reset();
+
+        // TODO set to appropriate value
+        program_addr = 0; 
+        cpu.set(vm::reg::pc, 0);
+    }
+
+    if (current_running_instr.op == vm::opcode::hlt) {
+        ImGui::SameLine();
+        ImGui::Text("Program halted");
+    }
+
     ImGui::BeginTable("Program", 2, table_flags);
         ImGui::TableSetupColumn("Addr", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize);
         ImGui::TableSetupColumn("Instruction", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableHeadersRow();
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
+
+    u16 pc = cpu.reg(vm::reg::pc);
     
     usize addr_counter = program_addr;
-    for (u32 u32_instr : program) {
-        auto instr = vm::instr(u32_instr);
+    for (usize program_idx = 0; program_idx < program.size(); program_idx++) {
+        auto next_instr = vm::instr(program[program_idx]);
         ImGui::Text("$%04zx", addr_counter);
         addr_counter += 4;
         ImGui::TableNextColumn();
-        ImGui::TextColored(COLOR_OPCODE, "%s", opcode_name(instr.op, disasm_ui.show_overload));
+        if (program_idx == pc / 4) {
+            // Set cell color to blue
+            ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImGui::ColorConvertFloat4ToU32(COLOR_HIGHLIGHT));
+        }
+
+        ImGui::TextColored(COLOR_OPCODE, "%s", opcode_name(next_instr.op, disasm_ui.show_overload));
         ImGui::SameLine();
-        draw_instr_arguments(instr);
+        draw_instr_arguments(next_instr);
         ImGui::TableNextColumn();
     }
     ImGui::EndTable();

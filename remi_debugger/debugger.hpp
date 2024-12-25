@@ -28,6 +28,7 @@ class debugger {
 public:
     void load_program(usize addr, std::span<u32> program);
     void execute();
+    vm::instr step();
 
     // ImGui methods
     void draw_imgui();

@@ -20,31 +20,39 @@
 #include "./debugger.hpp"
 #include "../remi_vm/vm.hpp"
 
-void debugger::load_program(usize addr, std::span<u32> program) {
-    this->program_addr = addr;
-    this->program = program;
-}
 
-// Executes a sakuya16c assembly program. The execution will not stop until a HLT instruction is encountered.
+// Temporary function to load a sakuya16c assembly program into the debugger
+// (later on programs will be loaded by ROMs)
 //
-// (for now it sets the PC register to 0 before executing the program)
+// for now it sets the PC register to 0 before executing the program
 //
 // Crashes if the last instruction in `program` is not HLT or if `program` is empty.
-void debugger::execute() {
+void debugger::load_program(usize addr, std::span<u32> program) {
     cpu.set(vm::reg::pc, 0);
 
+    this->program_addr = addr;
+    this->program = program;
+    
     assert(!program.empty());
     assert(program[program.size()-1] == (u32) vm::instr(vm::opcode::hlt));
+}
 
-    vm::instr next_instr = vm::instr(program[0]);
-    while (next_instr.op != vm::opcode::hlt) {
-        // Fetch instruction
-        u16 pc = cpu.reg(vm::reg::pc);
-        // `program` is an u32 array, but `pc` is supposed to be a byte index. Hence the need for division
-        next_instr = vm::instr(program[pc / 4]);
+vm::instr debugger::step() {
+    // Fetch instruction
+    u16 pc = cpu.reg(vm::reg::pc);
+    // `program` is an u32 array, but `pc` is supposed to be a byte index. Hence the need for division
+    vm::instr next_instr = vm::instr(program[pc / 4]);
+    if (next_instr.op != vm::opcode::hlt) {
         // Execute
         vm::execute(cpu, next_instr);
         // Program counter always increments by 4 after executing
         cpu.set(vm::reg::pc, pc + 4);
     }
+
+    return next_instr;
+}
+
+// Executes a sakuya16c assembly program. The execution will not stop until a HLT instruction is encountered.
+void debugger::execute() {
+    while (step().op != vm::opcode::hlt) {}
 }
