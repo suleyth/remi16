@@ -64,6 +64,14 @@ CPMAddPackage(
 )
 
 # Targets
+# Assembler
+add_executable(
+    remi_assembler
+
+    ./remi_assembler/main.cpp
+)
+target_include_directories(remi_assembler PRIVATE "./")
+
 # Debugger (main executable)
 add_executable(
     remi_debugger
@@ -91,6 +99,20 @@ add_library(
     ./remi_vm/vm.cpp
 )
 target_include_directories(remi_vm PRIVATE "./")
+
+# Compile test ROM
+add_custom_command(
+    OUTPUT bin/test_rom.remi16
+    COMMAND remi_assembler ../../test_rom/main.s16c
+    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    COMMENT "Compiling Test ROM..."
+    DEPENDS remi_assembler
+    VERBATIM
+)
+add_custom_target(
+    TestROM ALL
+    DEPENDS bin/test_rom.remi16
+)
 
 # Libraries
 target_link_libraries(remi_debugger PRIVATE remi_vm SDL3::SDL3-static)
