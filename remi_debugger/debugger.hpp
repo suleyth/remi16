@@ -15,9 +15,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 #include <span>
+#include <remi_vm/vm.hpp>
 
 #include "./main.hpp"
-#include "../remi_vm/vm.hpp"
 
 // sakuya16c assembly debugger
 class debugger {

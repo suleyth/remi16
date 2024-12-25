@@ -14,11 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
+#include <imgui.h>
+#include <remi_vm/vm.hpp>
+
 #include "./main.hpp"
-#include "../remi_vm/vm.hpp"
 #include "./debugger.hpp"
 
-#include <imgui.h>
 
 // How to format a register value
 enum class regview {

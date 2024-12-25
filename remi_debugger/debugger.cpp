@@ -16,9 +16,10 @@
 #include <cassert>
 #include <span>
 
+#include <remi_vm/vm.hpp>
+
 #include "./main.hpp"
 #include "./debugger.hpp"
-#include "../remi_vm/vm.hpp"
 
 
 // Temporary function to load a sakuya16c assembly program into the debugger
