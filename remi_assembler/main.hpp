@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 #include <cstdint>
+#include <fstream>
 #include <type_traits>
 
 // typedef cstdint types so they're easier to type
@@ -30,3 +31,26 @@ using i64 = int64_t;
 
 using usize = size_t;
 using isize = std::make_signed_t<usize>;
+
+// Region of memory in ROM
+struct region {
+    // identifier (0 if it's main entry point)
+    u32 id;
+    // offset in ROM to region
+    u32 offset;
+    
+    // size of region in bytes
+    u16 size;
+    // where to load region in RAM (0 for random)
+    u16 loadat;
+    // memory bank to load region in RAM to (65535 for random)
+    u16 bank;
+    // padding for now but may be used for something else
+    u16 reserved;
+};
+
+// helper to write binary data to ROM file (because the << operator writes in string format so we can't use that)
+template <typename T>
+void write(std::ofstream& rom, T* data) { rom.write((const char*) data, sizeof(T)); }
+template <typename T>
+void write(std::ofstream& rom, T data) { rom.write((const char*) &data, sizeof(T)); }
