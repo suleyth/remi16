@@ -40,18 +40,8 @@ int main() {
     ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer3_Init(renderer);
 
-    // Initialize VM
-    auto console = debugger {};
-    // Run test program
-    u32 program[] = {
-        (u32) vm::instr(vm::opcode::nop),
-        (u32) vm::instr(vm::opcode::mov_lit_reg, vm::word(u16(2)), u8(vm::reg::r1)),
-        (u32) vm::instr(vm::opcode::mov_lit_reg, vm::word(u16(2)), u8(vm::reg::r2)),
-        (u32) vm::instr(vm::opcode::mov_lit_reg, vm::word(i16(-32734)), u8(vm::reg::r3)),
-        (u32) vm::instr(vm::opcode::add_reg_reg, u8(vm::reg::r1), u8(vm::reg::r2)),
-        (u32) vm::instr(vm::opcode::hlt),
-    };
-    console.load_program(0x00, program);
+    // Initialize VM with test rom
+    auto console = debugger("./test_rom.remi16");
 
     // Show window only after everything is loaded
     SDL_ShowWindow(window);

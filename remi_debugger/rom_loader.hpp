@@ -14,27 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
-#include <span>
 #include <remi_vm/vm.hpp>
 
+#include <vector>
+#include <unordered_map>
+#include <fstream>
+
 #include "./main.hpp"
-#include "./rom_loader.hpp"
 
-// sakuya16c assembly debugger
-class debugger {
-    vm::sakuya16c cpu;
-    loaded_rom rom;
-    // temporary
-    std::span<u32> program;
-    u16 program_addr = 0;
-public:
-    debugger(const char* rom_path);
-
-
-    void execute();
-    vm::instr step();
-
-    // ImGui methods
-    void draw_imgui();
-    void draw_current_program_imgui();
+struct rom_region {
+    u32 rom_offset;
+    u32 size;
+    u16 loadat;
+    u16 bank;
 };
+
+struct loaded_rom {
+    std::ifstream file;
+    std::unordered_map<u32, rom_region> regions;
+    std::unordered_map<u32, std::vector<u8>> loaded_region_data;
+
+    // Crashes if region doesn't exist.
+    const std::vector<u8>& get_region(u32 region_id);
+};
+
+loaded_rom load_rom_from_file(const char* filename);

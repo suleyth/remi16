@@ -79,6 +79,7 @@ add_executable(
     ./remi_debugger/main.cpp
     ./remi_debugger/debugger.cpp
     ./remi_debugger/debugger_ui.cpp
+    ./remi_debugger/rom_loader.cpp
 
     # vendored ImGui dependencies
     ./vendor/imgui/imgui.cpp

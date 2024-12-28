@@ -21,19 +21,19 @@
 #include "./main.hpp"
 #include "./debugger.hpp"
 
-
-// Temporary function to load a sakuya16c assembly program into the debugger
-// (later on programs will be loaded by ROMs)
+// Constructs the debugger with a rom path.
+// Reads the rom from the file. Crashes if the file doesn't exist or is not a remi16 ROM file.
 //
-// for now it sets the PC register to 0 before executing the program
-//
-// Crashes if the last instruction in `program` is not HLT or if `program` is empty.
-void debugger::load_program(usize addr, std::span<u32> program) {
-    cpu.set(vm::reg::pc, 0);
-
-    this->program_addr = addr;
-    this->program = program;
+// (temporary)
+// Reads ROM region 0 (main) and sets it as the current running program. Crashes if region 0 doesn't exist,
+// or contains no code, or its code doesn't end with the "hlt" instruction.
+debugger::debugger(const char* rom_path) {
+    rom = load_rom_from_file(rom_path);
+    cpu.reset();
     
+    // Just set program to main region for now
+    const std::vector<u8>& main_region = rom.get_region(0);
+    program = std::span((u32*) main_region.data(), main_region.size() / sizeof(u32));
     assert(!program.empty());
     assert(program[program.size()-1] == (u32) vm::instr(vm::opcode::hlt));
 }
