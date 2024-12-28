@@ -39,9 +39,11 @@ int main(int argc, char** argv) {
     // Minor version (1 byte)
     write(rom, u8(1));
 
+    // TODO we need a reliable way of going back to each region and setting the correct offset after everything is written
+    // For now though we can just hardcode it since this is just a test file.
     region regions[] = {
         // main
-        region {.id = 0, .offset = u32(rom.tellp()), .size = std::size(program) * sizeof(u32), .loadat = 0x7f00, .bank = 0, .reserved = 0},
+        region {.id = 0, .offset = 24, .size = std::size(program) * sizeof(u32), .loadat = 0x7f00, .bank = 0, .reserved = 0},
     };
 
     // Region count
