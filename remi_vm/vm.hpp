@@ -78,11 +78,17 @@ enum class reg: u8 {
 };
 
 // Operation code for sakuya16c assembly instructions.
+//
+// Documentation for what each instruction does is in ./vm.cpp
 enum class opcode: u8 {
     nop = 0,
     hlt,
 
     mov_lit_reg,
+    mov_reg_reg,
+    mov_reg_mem,
+    mov_mem_reg,
+
     add_reg_reg,
 };
 
@@ -155,7 +161,9 @@ struct sakuya16c {
     }
 };
 
+class bus;
+
 // Executes a single instruction.
-control_flow execute(sakuya16c& cpu, instr instr);
+control_flow execute(sakuya16c& cpu, bus& bus, instr instr);
 
 } // namespace vm

@@ -27,7 +27,7 @@
 // (temporary)
 // Reads ROM region 0 (main) and sets it as the current running program. Crashes if region 0 doesn't exist,
 // or contains no code, or its code doesn't end with the "hlt" instruction.
-debugger::debugger(const char* rom_path) {
+debugger::debugger(const char* rom_path): bus(cpu) {
     rom = load_rom_from_file(rom_path);
     cpu.reset();
     
@@ -45,7 +45,7 @@ vm::instr debugger::step() {
     vm::instr next_instr = vm::instr(program[pc / 4]);
     if (next_instr.op != vm::opcode::hlt) {
         // Execute
-        vm::execute(cpu, next_instr);
+        vm::execute(cpu, bus, next_instr);
         // Program counter always increments by 4 after executing
         cpu.set(vm::reg::pc, pc + 4);
     }

@@ -81,7 +81,9 @@ public:
 
     // Adds a mapper to the bus.
     template<typename M> requires std::is_base_of_v<mapper_device, M>
-    void add_mapper(M&& mapper) { mappers.push_back(std::make_unique<M>(std::forward<M>(mapper))); }
+    void add_mapper(M&& mapper) { mappers.push_back(std::make_unique<M>(std::forward<M>(mapper))); }\
+
+    std::unique_ptr<mapper_device>& find_mapper_for(u16 addr);
 };
 
 } // namespace vm

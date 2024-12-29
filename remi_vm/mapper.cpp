@@ -74,6 +74,26 @@ void mapper_device::write16(u16 addr, u16 val) {
     }
 }
 
+std::unique_ptr<mapper_device>& bus::find_mapper_for(u16 addr) {
+    // Addresses above 0x8000 are guaranteed to be raw memory not claimed by the stack,
+    // hardware devices, or executing ROM code. Therefore we can just return the first mapper
+    // (the "MEMORY" mapper).
+    if (addr > 0x8000) {
+        return mappers[0];
+    }
+
+    for (auto& mapper : mappers) {
+        auto [range_start, range_end] = mapper->range();
+        if (addr >= range_start && addr <= range_end) {
+            return mapper;
+        }
+    }
+
+    assert(false && "no mapper found for address");
+    return mappers[0];
+}
+
+
 // Devices
 dev::memory::memory(const vm::sakuya16c& cpu): cpu(cpu) {
     lh = std::unique_ptr<u8[]>(new u8[0x8000]);

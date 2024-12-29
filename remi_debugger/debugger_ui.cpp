@@ -122,50 +122,17 @@ constexpr ImVec4 COLOR_REGISTER = ImVec4(0.94f, 0.52f, 0.47f, 1.0f); // #F28779
 constexpr ImVec4 COLOR_LITERAL = ImVec4(0.87f, 0.74f, 1.0f, 1.0f); // #DFBFFF
 constexpr ImVec4 COLOR_HIGHLIGHT = ImVec4(0.2f, 0.2f, 0.8f, 0.5f);
 
-// Returns a string representation of an opcode
-const char* opcode_name(vm::opcode opcode, bool overloaded_name = false);
-
 // UI state for the cpu viewer
 static struct {
     bool show_overload = false;
 } disasm_ui;
 
+// Returns a string representation of an opcode
+const char* opcode_name(vm::opcode opcode, bool overloaded_name = false);
+// Returns a string representation of a register
 const char* reg_name(vm::reg reg);
-
-void draw_instr_arguments(vm::instr instr) {
-    auto draw_lit_reg = [](vm::instr instr) {
-        u16 lit = vm::word(instr.args[0], instr.args[1]).val;
-        vm::reg reg = static_cast<vm::reg>(instr.args[2]);
-
-        ImGui::TextColored(COLOR_LITERAL, "$%04x", lit);
-        ImGui::SameLine(0, 0);
-        ImGui::Text(", ");
-        ImGui::SameLine(0, 0);
-        ImGui::TextColored(COLOR_REGISTER, "%s", reg_name(reg));
-    };
-
-    auto draw_reg_reg = [](vm::instr instr) {
-        vm::reg reg1 = static_cast<vm::reg>(instr.args[0]);
-        vm::reg reg2 = static_cast<vm::reg>(instr.args[1]);
-
-        ImGui::TextColored(COLOR_REGISTER, "%s", reg_name(reg1));
-        ImGui::SameLine(0, 0);
-        ImGui::Text(", ");
-        ImGui::SameLine(0, 0);
-        ImGui::TextColored(COLOR_REGISTER, "%s", reg_name(reg2));
-    };
-
-    switch (instr.op) {
-    case vm::opcode::mov_lit_reg:
-        draw_lit_reg(instr);
-        break;
-    case vm::opcode::add_reg_reg:
-        draw_reg_reg(instr);
-        break;
-    default:
-        break;
-    }
-}
+// Draws with ImGui the arguments of an instruction
+void draw_instr_arguments(vm::instr instr);
 
 // Draws dissassembly of the current running program
 void debugger::draw_current_program_imgui() {
@@ -251,6 +218,10 @@ const char* opcode_name(vm::opcode opcode, bool overloaded_name) {
     case vm::opcode::nop: return "nop";
     case vm::opcode::hlt: return "hlt";
     case vm::opcode::mov_lit_reg: return overloaded_name ? "mov_lit_reg" : "mov";
+    case vm::opcode::mov_reg_reg: return overloaded_name ? "mov_reg_reg" : "mov";
+    case vm::opcode::mov_mem_reg: return overloaded_name ? "mov_mem_reg" : "mov";
+    case vm::opcode::mov_reg_mem: return overloaded_name ? "mov_reg_mem" : "mov";
+
     case vm::opcode::add_reg_reg: return overloaded_name ? "add_reg_reg" : "add";
     }
     return "???";
@@ -278,4 +249,55 @@ const char* reg_name(vm::reg reg) {
     case vm::reg::fl: return "#fl";
     }
     return "#??";
+}
+
+void draw_instr_arguments(vm::instr instr) {
+    auto draw_lit_reg = [](vm::instr instr) {
+        u16 lit = vm::word(instr.args[0], instr.args[1]).val;
+        vm::reg reg = static_cast<vm::reg>(instr.args[2]);
+
+        ImGui::TextColored(COLOR_LITERAL, "$%04x", lit);
+        ImGui::SameLine(0, 0);
+        ImGui::Text(", ");
+        ImGui::SameLine(0, 0);
+        ImGui::TextColored(COLOR_REGISTER, "%s", reg_name(reg));
+    };
+
+    auto draw_reg_lit = [](vm::instr instr) {
+        vm::reg reg = static_cast<vm::reg>(instr.args[0]);
+        u16 lit = vm::word(instr.args[1], instr.args[2]).val;
+
+        ImGui::TextColored(COLOR_REGISTER, "%s", reg_name(reg));
+        ImGui::SameLine(0, 0);
+        ImGui::Text(", ");
+        ImGui::SameLine(0, 0);
+        ImGui::TextColored(COLOR_LITERAL, "$%04x", lit);
+    };
+
+    auto draw_reg_reg = [](vm::instr instr) {
+        vm::reg reg1 = static_cast<vm::reg>(instr.args[0]);
+        vm::reg reg2 = static_cast<vm::reg>(instr.args[1]);
+
+        ImGui::TextColored(COLOR_REGISTER, "%s", reg_name(reg1));
+        ImGui::SameLine(0, 0);
+        ImGui::Text(", ");
+        ImGui::SameLine(0, 0);
+        ImGui::TextColored(COLOR_REGISTER, "%s", reg_name(reg2));
+    };
+
+    switch (instr.op) {
+    case vm::opcode::mov_mem_reg:
+    case vm::opcode::mov_lit_reg:
+        draw_lit_reg(instr);
+        break;
+    case vm::opcode::mov_reg_reg:
+    case vm::opcode::add_reg_reg:
+        draw_reg_reg(instr);
+        break;
+    case vm::opcode::mov_reg_mem:
+        draw_reg_lit(instr);
+        break;
+    default:
+        break;
+    }
 }
