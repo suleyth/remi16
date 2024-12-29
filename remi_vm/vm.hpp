@@ -147,7 +147,7 @@ struct sakuya16c {
     // Sets the value of a register.
     inline void set(reg reg, u16 val) { registers[u8(reg)] = val; }
     // Gets the value of a register.
-    inline u16 reg(reg reg) { return registers[u8(reg)]; }
+    inline u16 reg(reg reg) const { return registers[u8(reg)]; }
 
     inline void reset() {
         memset(registers, 0, sizeof(registers));
