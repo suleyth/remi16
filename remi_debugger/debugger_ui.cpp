@@ -163,6 +163,7 @@ void debugger::draw_current_program_imgui() {
     ImGui::SameLine();
     if (ImGui::Button("Reset")) {
         cpu.reset();
+        bus.reset();
 
         // TODO set to appropriate value
         program_addr = 0; 

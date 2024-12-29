@@ -40,6 +40,8 @@ public:
     virtual u8 read(u16 addr) const = 0;
     // Writes an 8bit value into the device.
     virtual void write(u16 addr, u8 val) = 0;
+    // Resets the device, usually clearing to 0.
+    virtual void reset() = 0;
 
     // Reads a 16bit value from the device. Implemented automatically
     u16 read16(u16 addr) const;
@@ -71,6 +73,7 @@ namespace dev {
 
         u8 read(u16 addr) const override;
         void write(u16 addr, u8 val) override;
+        void reset() override;
     };
 } // namespace dev
 
@@ -87,6 +90,8 @@ public:
     const std::unique_ptr<mapper_device>& find_mapper_for(u16 addr) const;
 
     const std::vector<std::unique_ptr<mapper_device>>& get_mappers() const { return mappers; }
+
+    void reset();
 };
 
 } // namespace vm

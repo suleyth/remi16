@@ -113,6 +113,11 @@ const std::unique_ptr<mapper_device>& bus::find_mapper_for(u16 addr) const {
     return mappers[0];
 }
 
+void bus::reset() {
+    for (auto& mapper : mappers) {
+        mapper->reset();
+    }
+}
 
 // Devices
 dev::memory::memory(const vm::sakuya16c& cpu): cpu(cpu) {
@@ -123,6 +128,10 @@ dev::memory::memory(const vm::sakuya16c& cpu): cpu(cpu) {
     hh2 = std::unique_ptr<u8[]>(new u8[0x8000]);
     hh3 = std::unique_ptr<u8[]>(new u8[0x8000]);
 
+    reset();
+}
+
+void dev::memory::reset() {
     // clear all arrays to 0
     memset(lh.get(), 0, 0x8000);
     memset(hh0.get(), 0, 0x8000);
