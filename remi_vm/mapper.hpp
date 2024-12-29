@@ -85,6 +85,8 @@ public:
 
     std::unique_ptr<mapper_device>& find_mapper_for(u16 addr);
     const std::unique_ptr<mapper_device>& find_mapper_for(u16 addr) const;
+
+    const std::vector<std::unique_ptr<mapper_device>>& get_mappers() const { return mappers; }
 };
 
 } // namespace vm

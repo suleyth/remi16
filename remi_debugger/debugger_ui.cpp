@@ -16,10 +16,10 @@
 #pragma once
 #include <imgui.h>
 #include <remi_vm/vm.hpp>
+#include <remi_vm/mapper.hpp>
 
 #include "./main.hpp"
 #include "./debugger.hpp"
-
 
 // How to format a register value
 enum class regview {
@@ -205,12 +205,90 @@ void debugger::draw_current_program_imgui() {
     ImGui::End();
 }
 
+static struct {
+    char current_section_input[4];
+    i32 current_section = 0;
+} memory_ui;
+
+void mapper_imgui(const std::unique_ptr<vm::mapper_device>& mapper, const vm::bus& bus) {
+    auto [range_start, range_end] = mapper->range();
+    u32 num_sections = (range_end - range_start) / 0xFF;
+
+    if (memory_ui.current_section == 0) {
+        ImGui::BeginDisabled();
+        ImGui::Button("Previous Section");
+        ImGui::EndDisabled();
+    } else {
+        if (ImGui::Button("Previous Section")) {
+            memory_ui.current_section--;
+        }
+    }
+    ImGui::SameLine();
+    ImGui::PushItemWidth(30.0);
+    ImGui::InputInt("###Section", &memory_ui.current_section, 0, 0);
+    if (memory_ui.current_section < 0) memory_ui.current_section = 0;
+    if (memory_ui.current_section > num_sections - 1) memory_ui.current_section = num_sections - 1;
+    ImGui::PopItemWidth();
+    ImGui::SameLine();
+    ImGui::Text("/%i", num_sections - 1);
+    ImGui::SameLine();
+
+    if (memory_ui.current_section == num_sections - 1) {
+        ImGui::BeginDisabled();
+        ImGui::Button("Next Section");
+        ImGui::EndDisabled();
+    } else {
+        if (ImGui::Button("Next Section")) {
+            memory_ui.current_section++;
+        }
+    }
+    ImGui::SameLine();
+    ImGui::Text("Range $%04X..$%04X", range_start, range_end);
+    ImGui::Separator();
+
+    ImGui::BeginChild("Memory Viewer");
+    u16 addr = range_start + (memory_ui.current_section * 0xFF);
+    for (u16 col = 0; col < 16; col++) {
+        ImGui::Text("$%04X: ", addr);
+        ImGui::SameLine();
+        for (u16 row = 0; row < 16; row++) {
+            if (addr > range_end) break;
+            u8 byte = mapper->read(addr);
+            if (byte != 0x00) {
+                ImGui::Text("%02X", byte);
+            } else {
+                ImGui::TextDisabled("%02X", byte);
+            }
+            ImGui::SameLine();
+            addr++;
+        }
+        ImGui::NewLine();
+    }
+    ImGui::EndChild();
+}
+
+void mappers_imgui(const vm::sakuya16c& cpu, const vm::bus& bus) {
+    ImGui::Begin("Mapper Devices");
+    ImGuiTabBarFlags tab_flags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton;
+
+    if (ImGui::BeginTabBar("Mappers", tab_flags)) {
+        for (auto& mapper : bus.get_mappers()) {
+            if (ImGui::BeginTabItem(mapper->name())) {
+                mapper_imgui(mapper, bus);
+                ImGui::EndTabItem();
+            }
+        }
+        ImGui::EndTabBar();
+    }
+    ImGui::End();
+}
+
 // Renders all debugger ImGui
 void debugger::draw_imgui() {
     cpu_imgui(cpu);
+    mappers_imgui(cpu, bus);
     draw_current_program_imgui();
 }
-
 
 // Opcode enum to string
 const char* opcode_name(vm::opcode opcode, bool overloaded_name) {
