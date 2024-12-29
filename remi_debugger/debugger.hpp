@@ -15,7 +15,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 #include <span>
+
 #include <remi_vm/vm.hpp>
+#include <remi_vm/mapper.hpp>
 
 #include "./main.hpp"
 #include "./rom_loader.hpp"
@@ -23,6 +25,8 @@
 // sakuya16c assembly debugger
 class debugger {
     vm::sakuya16c cpu;
+    vm::bus bus;
+    
     loaded_rom rom;
     // temporary
     std::span<u32> program;

@@ -98,6 +98,7 @@ add_library(
     remi_vm STATIC
 
     ./remi_vm/vm.cpp
+    ./remi_vm/mapper.cpp
 )
 target_include_directories(remi_vm PRIVATE "./")
 
