@@ -118,14 +118,21 @@ const std::unique_ptr<mapper_device>& bus::find_mapper_for(u16 addr) const {
 dev::memory::memory(const vm::sakuya16c& cpu): cpu(cpu) {
     lh = std::unique_ptr<u8[]>(new u8[0x8000]);
 
-    hh0 = std::unique_ptr<u8[]>(new u8[0x8000-1]);
-    hh1 = std::unique_ptr<u8[]>(new u8[0x8000-1]);
-    hh2 = std::unique_ptr<u8[]>(new u8[0x8000-1]);
-    hh3 = std::unique_ptr<u8[]>(new u8[0x8000-1]);
+    hh0 = std::unique_ptr<u8[]>(new u8[0x8000]);
+    hh1 = std::unique_ptr<u8[]>(new u8[0x8000]);
+    hh2 = std::unique_ptr<u8[]>(new u8[0x8000]);
+    hh3 = std::unique_ptr<u8[]>(new u8[0x8000]);
+
+    // clear all arrays to 0
+    memset(lh.get(), 0, 0x8000);
+    memset(hh0.get(), 0, 0x8000);
+    memset(hh1.get(), 0, 0x8000);
+    memset(hh2.get(), 0, 0x8000);
+    memset(hh3.get(), 0, 0x8000);
 }
 
 u8 dev::memory::read(u16 addr) const { 
-    if (addr <= 0x8000) {
+    if (addr < 0x8000) {
         return lh[addr];
     }
 
