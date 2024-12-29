@@ -18,7 +18,7 @@
 
 namespace vm {
 
-u16 mapper_device::read16(u16 addr) { 
+u16 mapper_device::read16(u16 addr) const { 
     // Read first byte
     u8 b1 = read(addr);
 
@@ -93,6 +93,26 @@ std::unique_ptr<mapper_device>& bus::find_mapper_for(u16 addr) {
     return mappers[0];
 }
 
+// const version
+const std::unique_ptr<mapper_device>& bus::find_mapper_for(u16 addr) const {
+    // Addresses above 0x8000 are guaranteed to be raw memory not claimed by the stack,
+    // hardware devices, or executing ROM code. Therefore we can just return the first mapper
+    // (the "MEMORY" mapper).
+    if (addr > 0x8000) {
+        return mappers[0];
+    }
+
+    for (auto& mapper : mappers) {
+        auto [range_start, range_end] = mapper->range();
+        if (addr >= range_start && addr <= range_end) {
+            return mapper;
+        }
+    }
+
+    assert(false && "no mapper found for address");
+    return mappers[0];
+}
+
 
 // Devices
 dev::memory::memory(const vm::sakuya16c& cpu): cpu(cpu) {
@@ -104,7 +124,7 @@ dev::memory::memory(const vm::sakuya16c& cpu): cpu(cpu) {
     hh3 = std::unique_ptr<u8[]>(new u8[0x8000-1]);
 }
 
-u8 dev::memory::read(u16 addr) { 
+u8 dev::memory::read(u16 addr) const { 
     if (addr <= 0x8000) {
         return lh[addr];
     }

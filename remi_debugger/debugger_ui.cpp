@@ -32,7 +32,7 @@ static struct {
 } cpu_ui;
 
 // Renders ImGui table row for a register
-void reg_imgui(vm::sakuya16c &cpu, const char* name, vm::reg reg, regview& view) {
+void reg_imgui(const vm::sakuya16c &cpu, const char* name, vm::reg reg, regview& view) {
     // Emphasize button
     ImGui::PushStyleVarX(ImGuiStyleVar_FramePadding, 15);
     ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, 0);
@@ -69,7 +69,7 @@ void reg_imgui(vm::sakuya16c &cpu, const char* name, vm::reg reg, regview& view)
 }
 
 // Renders ImGui related to the sakuya16c CPU.
-void cpu_imgui(vm::sakuya16c &cpu) {
+void cpu_imgui(const vm::sakuya16c &cpu) {
     ImGui::Begin("sakuya16c");
 
     ImGuiTableFlags table_flags = ImGuiTableFlags_Borders 

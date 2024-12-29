@@ -25,24 +25,24 @@ namespace vm {
 class mapper_device {
 public:
     // Get device name
-    virtual const char* name() = 0;
+    virtual const char* name() const = 0;
     // At what memory address does this device start and end.
-    virtual std::pair<u16, u16> range() = 0;
+    virtual std::pair<u16, u16> range() const = 0;
     // If this returns true, the bus will call the device's read() and write() functions
     // with remapped adresses.
     //
     // Imagine a device over 0x1000 to 0x1050. Without remapping, the addresses passed to the device would be
     // absolute. So if you write to 0x1020, the device will get 0x1020 in its read function. If remap is set to
     // true, however, it will recieve 0x20.
-    virtual bool remap_range() = 0;
+    virtual bool remap_range() const = 0;
 
     // Reads an 8bit value from the device. Ranges are checked automatically.
-    virtual u8 read(u16 addr) = 0;
+    virtual u8 read(u16 addr) const = 0;
     // Writes an 8bit value into the device.
     virtual void write(u16 addr, u8 val) = 0;
 
     // Reads a 16bit value from the device. Implemented automatically
-    u16 read16(u16 addr);
+    u16 read16(u16 addr) const;
     // Writes a 16bit value into the device. Implemented automatically
     void write16(u16 addr, u16 val);
 };
@@ -65,11 +65,11 @@ namespace dev {
     public:
         memory(const vm::sakuya16c& cpu);
 
-        const char* name() override { return "MEMORY"; }
-        std::pair<u16, u16> range() override { return {0x0000, 0xffff}; }
-        bool remap_range() override { return false; }
+        const char* name() const override { return "MEMORY"; }
+        std::pair<u16, u16> range() const override { return {0x0000, 0xffff}; }
+        bool remap_range() const override { return false; }
 
-        u8 read(u16 addr) override;
+        u8 read(u16 addr) const override;
         void write(u16 addr, u8 val) override;
     };
 } // namespace dev
@@ -84,6 +84,7 @@ public:
     void add_mapper(M&& mapper) { mappers.push_back(std::make_unique<M>(std::forward<M>(mapper))); }\
 
     std::unique_ptr<mapper_device>& find_mapper_for(u16 addr);
+    const std::unique_ptr<mapper_device>& find_mapper_for(u16 addr) const;
 };
 
 } // namespace vm
