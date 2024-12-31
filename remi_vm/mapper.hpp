@@ -16,6 +16,7 @@
 
 #pragma once
 #include <vector>
+#include <span>
 #include <memory>
 
 #include "./vm.hpp"
@@ -47,6 +48,9 @@ public:
     u16 read16(u16 addr) const;
     // Writes a 16bit value into the device. Implemented automatically
     void write16(u16 addr, u16 val);
+
+    void read_region(u16 addr, u16 size, u8* ptr) const;
+    void write_region(u16 addr, std::span<u8> data);
 };
 
 namespace dev {

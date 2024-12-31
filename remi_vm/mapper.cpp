@@ -74,6 +74,42 @@ void mapper_device::write16(u16 addr, u16 val) {
     }
 }
 
+void mapper_device::read_region(u16 addr, u16 size, u8* ptr) const {
+    // Check range
+    auto [range_start, range_end] = range();
+    if (remap_range()) {
+        range_end = range_end - range_start;
+        range_start = 0;
+    }
+    if (addr < range_start || addr + size > range_end) {
+        // TODO out of range interrupt
+        assert(false && "out of range");
+        return;
+    }
+
+    for (u16 i = 0; i < size; i++) {
+        ptr[i] = read(addr + i);
+    }
+}
+
+void mapper_device::write_region(u16 addr, std::span<u8> data) {
+    // Check range
+    auto [range_start, range_end] = range();
+    if (remap_range()) {
+        range_end = range_end - range_start;
+        range_start = 0;
+    }
+    if (addr <= range_start || addr + data.size() >= range_end) {
+        // TODO out of range interrupt
+        assert(false && "out of range");
+        return;
+    }
+
+    for (u16 i = 0; i < data.size(); i++) {
+        write(addr + i, data[i]);
+    }
+}
+
 std::unique_ptr<mapper_device>& bus::find_mapper_for(u16 addr) {
     // Addresses above 0x8000 are guaranteed to be raw memory not claimed by the stack,
     // hardware devices, or executing ROM code. Therefore we can just return the first mapper

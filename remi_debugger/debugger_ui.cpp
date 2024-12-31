@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #include <remi_vm/vm.hpp>
 #include <remi_vm/mapper.hpp>
@@ -39,11 +40,11 @@ void reg_imgui(const vm::sakuya16c &cpu, const char* name, vm::reg reg, regview&
     ImGui::PushStyleVarX(ImGuiStyleVar_ItemSpacing, 0);
     if (ImGui::Button(name)) {
         // Switch view
-            switch (view) {
-            case regview::unsigned_: view = regview::signed_; break;
-            case regview::signed_: view = regview::hex; break;
-            case regview::hex: view = regview::unsigned_; break;
-            }
+        switch (view) {
+        case regview::unsigned_: view = regview::signed_; break;
+        case regview::signed_: view = regview::hex; break;
+        case regview::hex: view = regview::unsigned_; break;
+        }
     }
     ImGui::PopStyleVar(3);
 
@@ -121,6 +122,7 @@ constexpr ImVec4 COLOR_OPCODE = ImVec4(1.0f, 0.67f, 0.4f, 1.0f); // #FFAD66
 constexpr ImVec4 COLOR_REGISTER = ImVec4(0.94f, 0.52f, 0.47f, 1.0f); // #F28779
 constexpr ImVec4 COLOR_LITERAL = ImVec4(0.87f, 0.74f, 1.0f, 1.0f); // #DFBFFF
 constexpr ImVec4 COLOR_HIGHLIGHT = ImVec4(0.2f, 0.2f, 0.8f, 0.5f);
+constexpr ImVec4 COLOR_GRAY = ImVec4(0.35, 0.35, 0.35, 0.35);
 
 // UI state for the cpu viewer
 static struct {
@@ -176,11 +178,11 @@ void debugger::draw_current_program_imgui() {
     }
 
     ImGui::BeginTable("Program", 2, table_flags);
-        ImGui::TableSetupColumn("Addr", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize);
-        ImGui::TableSetupColumn("Instruction", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableHeadersRow();
-        ImGui::TableNextRow();
-        ImGui::TableNextColumn();
+    ImGui::TableSetupColumn("Addr", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize);
+    ImGui::TableSetupColumn("Instruction", ImGuiTableColumnFlags_WidthStretch);
+    ImGui::TableHeadersRow();
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
 
     u16 pc = cpu.reg(vm::reg::pc);
     
@@ -247,25 +249,74 @@ void mapper_imgui(const std::unique_ptr<vm::mapper_device>& mapper, const vm::bu
     ImGui::Text("Range $%04X..$%04X", range_start, range_end);
     ImGui::Separator();
 
-    ImGui::BeginChild("Memory Viewer");
+    ImGuiTableFlags table_flags = ImGuiTableFlags_BordersInnerV 
+            | ImGuiTableFlags_RowBg 
+            | ImGuiTableFlags_SizingFixedFit
+            | ImGuiTableFlags_ScrollY
+            
+            | ImGuiTableFlags_BordersOuterH;
+    ImGui::BeginTable("Memory", 3, table_flags);
+    ImGui::TableSetupColumn("Addr", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize);
+    ImGui::TableSetupColumn("Hex", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize);
+    ImGui::TableSetupColumn("ASCII", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize);
+    ImGui::TableNextColumn();
+
     u16 addr = range_start + (memory_ui.current_section * 0xFF);
     for (u16 col = 0; col < 16; col++) {
-        ImGui::Text("$%04X: ", addr);
-        ImGui::SameLine();
+        // Address
+        ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImGui::GetColorU32(ImGuiCol_FrameBg));
+        ImGui::SameLine(0.0f, 4.0f);
+        ImGui::Text("$%04X", addr);
+        ImGui::TableNextColumn();
+
+        u8 data_row[16] = {};
+        mapper->read_region(addr, std::min(u16(16), u16(range_end - addr)), data_row);
+        // Hex view
         for (u16 row = 0; row < 16; row++) {
             if (addr > range_end) break;
-            u8 byte = mapper->read(addr);
-            if (byte != 0x00) {
-                ImGui::Text("%02X", byte);
-            } else {
-                ImGui::TextDisabled("%02X", byte);
+            u8 byte = data_row[row];
+
+            if (byte == 0x00) ImGui::TextDisabled("%02X", byte);
+            else ImGui::Text("%02X", byte);
+
+            // Item rect covers only the text, while we want to cover the whole cell
+            auto min = ImGui::GetItemRectMin() - ImVec2(4.0f, 1.0f);
+            auto max = ImGui::GetItemRectMax() + ImVec2(4.0f, 1.0f);
+            if (ImGui::IsMouseHoveringRect(min, max)) {
+                // Highlight row
+                ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImGui::GetColorU32(COLOR_GRAY));
+                // Highlight byte
+                auto* dl = ImGui::GetWindowDrawList();
+                dl->AddRectFilled(min, max, ImGui::GetColorU32(ImGuiCol_FrameBg));
             }
+
             ImGui::SameLine();
-            addr++;
         }
-        ImGui::NewLine();
+        ImGui::TableNextColumn();
+        // ASCII view
+        for (u16 row = 0; row < 16; row++) {
+            if (addr > range_end) break;
+            u8 byte = data_row[row];
+
+            if (byte < 0x20 || byte > 0x7E) ImGui::TextDisabled(".");
+            else ImGui::Text("%c", byte);
+            // Item rect covers only the text, while we want to cover the whole cell
+            auto min = ImGui::GetItemRectMin() - ImVec2(4.0f, 1.0f);
+            auto max = ImGui::GetItemRectMax() + ImVec2(4.0f, 1.0f);
+            if (ImGui::IsMouseHoveringRect(min, max)) {
+                // Highlight row
+                ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImGui::GetColorU32(COLOR_GRAY));
+                // Highlight byte
+                auto* dl = ImGui::GetWindowDrawList();
+                dl->AddRectFilled(min, max, ImGui::GetColorU32(ImGuiCol_FrameBg));
+            }
+
+            ImGui::SameLine(0.0, 6.0f);
+        }
+        ImGui::TableNextColumn();
+        addr += 16;
     }
-    ImGui::EndChild();
+    ImGui::EndTable();
 }
 
 void mappers_imgui(const vm::sakuya16c& cpu, const vm::bus& bus) {
